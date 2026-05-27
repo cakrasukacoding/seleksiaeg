@@ -22,6 +22,7 @@ SKILLS.forEach(s => {
 const grid = document.getElementById('skills-grid')
 
 SKILLS.forEach(({ key, label }) => {
+
   const row = document.createElement('div')
 
   row.className = 'skill-row'
@@ -30,11 +31,21 @@ SKILLS.forEach(({ key, label }) => {
     <span class="skill-name">${label}</span>
 
     <div class="skill-btns">
-      <button class="skill-btn" data-skill="${key}" data-val="yes">
+      <button
+        type="button"
+        class="skill-btn"
+        data-skill="${key}"
+        data-val="yes"
+      >
         YES
       </button>
 
-      <button class="skill-btn" data-skill="${key}" data-val="no">
+      <button
+        type="button"
+        class="skill-btn"
+        data-skill="${key}"
+        data-val="no"
+      >
         NO
       </button>
     </div>
@@ -44,6 +55,7 @@ SKILLS.forEach(({ key, label }) => {
 })
 
 grid.addEventListener('click', e => {
+
   const btn = e.target.closest('.skill-btn')
 
   if (!btn) return
@@ -53,7 +65,10 @@ grid.addEventListener('click', e => {
 
   skillState[skill] = val === 'yes'
 
-  const btns = grid.querySelectorAll(`[data-skill="${skill}"]`)
+  const btns =
+    grid.querySelectorAll(
+      `[data-skill="${skill}"]`
+    )
 
   btns.forEach(b => {
     b.classList.remove('active-yes')
@@ -75,6 +90,7 @@ const html = document.documentElement
 let dark = true
 
 function applyTheme(isDark) {
+
   dark = isDark
 
   html.setAttribute(
@@ -98,18 +114,27 @@ document
 /* ─────────────────────────────
    MOBILE MENU
 ───────────────────────────── */
-const hamburger = document.getElementById('hamburger')
-const mobileMenu = document.getElementById('mobile-menu')
+const hamburger =
+  document.getElementById('hamburger')
+
+const mobileMenu =
+  document.getElementById('mobile-menu')
 
 hamburger?.addEventListener('click', () => {
+
   hamburger.classList.toggle('open')
+
   mobileMenu.classList.toggle('open')
 })
 
-document.querySelectorAll('.mobile-link')
+document
+  .querySelectorAll('.mobile-link')
   .forEach(link => {
+
     link.addEventListener('click', () => {
+
       hamburger.classList.remove('open')
+
       mobileMenu.classList.remove('open')
     })
   })
@@ -118,9 +143,15 @@ document.querySelectorAll('.mobile-link')
    POPUP
 ───────────────────────────── */
 function showPopup(msg, ok = true) {
-  const popup = document.getElementById('popup')
-  const icon = document.getElementById('popup-icon')
-  const text = document.getElementById('popup-msg')
+
+  const popup =
+    document.getElementById('popup')
+
+  const icon =
+    document.getElementById('popup-icon')
+
+  const text =
+    document.getElementById('popup-msg')
 
   icon.className = ok
     ? 'fa-solid fa-circle-check'
@@ -139,24 +170,38 @@ function showPopup(msg, ok = true) {
    DEVICE INFO
 ───────────────────────────── */
 function getDeviceInfo() {
+
   const ua = navigator.userAgent
 
   let device = 'Desktop'
 
   if (/Android/i.test(ua)) {
     device = 'Android'
-  } else if (/iPhone|iPad|iPod/i.test(ua)) {
+  }
+
+  else if (/iPhone|iPad|iPod/i.test(ua)) {
     device = 'iOS'
   }
 
   let browser = 'Unknown'
 
-  if (/Chrome/i.test(ua)) {
+  if (
+    /Chrome/i.test(ua) &&
+    !/Edge/i.test(ua)
+  ) {
     browser = 'Chrome'
-  } else if (/Firefox/i.test(ua)) {
+  }
+
+  else if (/Firefox/i.test(ua)) {
     browser = 'Firefox'
-  } else if (/Safari/i.test(ua)) {
+  }
+
+  else if (/Safari/i.test(ua)) {
     browser = 'Safari'
+  }
+
+  else if (/Edge/i.test(ua)) {
+    browser = 'Edge'
   }
 
   return {
@@ -169,22 +214,27 @@ function getDeviceInfo() {
    SUBMIT FORM
 ───────────────────────────── */
 async function submitForm() {
-  const nama = document
-    .getElementById('nama')
-    .value
-    .trim()
 
-  const daerah = document
-    .getElementById('daerah')
-    .value
-    .trim()
+  const nama =
+    document
+      .getElementById('nama')
+      .value
+      .trim()
 
-  const umur = document
-    .getElementById('umur')
-    .value
-    .trim()
+  const daerah =
+    document
+      .getElementById('daerah')
+      .value
+      .trim()
+
+  const umur =
+    document
+      .getElementById('umur')
+      .value
+      .trim()
 
   if (!nama || !daerah || !umur) {
+
     showPopup(
       'Mohon lengkapi semua field.',
       false
@@ -193,7 +243,8 @@ async function submitForm() {
     return
   }
 
-  const btn = document.getElementById('submit-btn')
+  const btn =
+    document.getElementById('submit-btn')
 
   btn.disabled = true
 
@@ -202,35 +253,47 @@ async function submitForm() {
     Sending...
   `
 
-  const { device, browser } = getDeviceInfo()
+  const {
+    device,
+    browser
+  } = getDeviceInfo()
 
-  const time = new Date()
-    .toLocaleString('id-ID', {
-      timeZone: 'Asia/Jakarta'
-    })
+  const time =
+    new Date().toLocaleString(
+      'id-ID',
+      {
+        timeZone: 'Asia/Jakarta'
+      }
+    )
 
   try {
-    const res = await fetch('/api/send', {
-      method: 'POST',
 
-      headers: {
-        'Content-Type': 'application/json'
-      },
+    const res = await fetch(
+      '/api/send',
+      {
+        method: 'POST',
 
-      body: JSON.stringify({
-        nama,
-        daerah,
-        umur,
-        skillState,
-        device,
-        browser,
-        time
-      })
-    })
+        headers: {
+          'Content-Type':
+            'application/json'
+        },
+
+        body: JSON.stringify({
+          nama,
+          daerah,
+          umur,
+          skillState,
+          device,
+          browser,
+          time
+        })
+      }
+    )
 
     const data = await res.json()
 
     if (data.success) {
+
       showPopup(
         'Data berhasil dikirim ✅'
       )
@@ -242,8 +305,14 @@ async function submitForm() {
       document
         .querySelectorAll('.skill-btn')
         .forEach(btn => {
-          btn.classList.remove('active-yes')
-          btn.classList.remove('active-no')
+
+          btn.classList.remove(
+            'active-yes'
+          )
+
+          btn.classList.remove(
+            'active-no'
+          )
         })
 
       SKILLS.forEach(s => {
@@ -251,18 +320,23 @@ async function submitForm() {
       })
 
     } else {
-      throw new Error(data.error)
+
+      throw new Error(
+        data.error || 'Unknown error'
+      )
     }
 
   } catch (err) {
+
     console.error(err)
 
     showPopup(
-      'Gagal mengirim data ❌',
+      err.message,
       false
     )
 
   } finally {
+
     btn.disabled = false
 
     btn.innerHTML = `
@@ -279,15 +353,23 @@ const revealEls =
   document.querySelectorAll('.reveal')
 
 const observer =
-  new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible')
-      }
-    })
-  }, {
-    threshold: 0.12
-  })
+  new IntersectionObserver(
+    entries => {
+
+      entries.forEach(e => {
+
+        if (e.isIntersecting) {
+          e.target.classList.add(
+            'visible'
+          )
+        }
+      })
+
+    },
+    {
+      threshold: 0.12
+    }
+  )
 
 revealEls.forEach(el => {
   observer.observe(el)
