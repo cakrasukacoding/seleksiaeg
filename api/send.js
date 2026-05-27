@@ -1,11 +1,14 @@
 export default async function handler(req, res) {
+
   if (req.method !== 'POST') {
     return res.status(405).json({
-      success: false
+      success: false,
+      error: 'Method not allowed'
     })
   }
 
   try {
+
     const {
       nama,
       daerah,
@@ -17,7 +20,7 @@ export default async function handler(req, res) {
     } = req.body
 
     const fmt = (v) => {
-      if (v === null) {
+      if (v === null || v === undefined) {
         return 'Belum dipilih ❓'
       }
 
@@ -49,22 +52,21 @@ export default async function handler(req, res) {
 🕒 Time: ${time}
 `
 
-    const telegram =
-      await fetch(
-        `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
-        {
-          method: 'POST',
+    const telegram = await fetch(
+      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
+      {
+        method: 'POST',
 
-          headers: {
-            'Content-Type': 'application/json'
-          },
+        headers: {
+          'Content-Type': 'application/json'
+        },
 
-          body: JSON.stringify({
-            chat_id: process.env.CHAT_ID,
-            text: message
-          })
-        }
-      )
+        body: JSON.stringify({
+          chat_id: process.env.CHAT_ID,
+          text: message
+        })
+      }
+    )
 
     const data = await telegram.json()
 
@@ -77,9 +79,12 @@ export default async function handler(req, res) {
     })
 
   } catch (err) {
+
+    console.error(err)
+
     return res.status(500).json({
       success: false,
       error: err.message
     })
   }
-      }
+}
