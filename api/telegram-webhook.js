@@ -1,4 +1,4 @@
-import { pendingStore } from './login.js'
+import { pendingStore } from "./login.js"
 
 export default async function handler(req, res) {
 
@@ -6,25 +6,30 @@ export default async function handler(req, res) {
 
   if (update.callback_query) {
 
-    const callback =
+    const data =
       update.callback_query.data
 
     const [action, token] =
-      callback.split(':')
+      data.split(":")
 
-    const data =
+    const loginData =
       pendingStore.get(token)
 
-    if (data) {
+    if (loginData) {
 
-      data.status =
-        action === 'approve'
-          ? 'approved'
-          : 'denied'
+      loginData.status =
+        action === "approve"
+          ? "approved"
+          : "rejected"
 
-      pendingStore.set(token, data)
+      pendingStore.set(
+        token,
+        loginData
+      )
     }
   }
 
-  res.status(200).end()
+  res.status(200).json({
+    ok: true
+  })
 }
