@@ -1,69 +1,30 @@
-import { pendingStore } from "./login.js";
+import { pendingStore } from './login.js'
 
 export default async function handler(req, res) {
 
-  const callback =
-    req.body?.callback_query;
+  const update = req.body
 
-  if (!callback) {
-    return res.status(200).end();
-  }
+  if (update.callback_query) {
 
-  const data =
-    callback.data;
+    const callback =
+      update.callback_query.data
 
-  if (data.startsWith("approve:")) {
+    const [action, token] =
+      callback.split(':')
 
-    const token =
-      data.replace("approve:", "");
+    const data =
+      pendingStore.get(token)
 
-    const login =
-      pendingStore.get(token);
+    if (data) {
 
-    if (login) {
+      data.status =
+        action === 'approve'
+          ? 'approved'
+          : 'denied'
 
-      login.status = "approved";
-
-      pendingStore.set(
-        token,
-        login
-      );
+      pendingStore.set(token, data)
     }
   }
 
-  if (data.startsWith("deny:")) {
-
-    const token =
-      data.replace("deny:", "");
-
-    const login =
-      pendingStore.get(token);
-
-    if (login) {
-
-      login.status = "denied";
-
-      pendingStore.set(
-        token,
-        login
-      );
-    }
-  }
-
-  await fetch(
-    `https://api.telegram.org/bot${process.env.BOT_TOKEN}/answerCallbackQuery`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
-      body: JSON.stringify({
-        callback_query_id:
-          callback.id
-      })
-    }
-  );
-
-  return res.status(200).end();
+  res.status(200).end()
 }
