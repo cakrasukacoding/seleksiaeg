@@ -1,20 +1,20 @@
-import { pendingStore } from "./login.js";
+import { pendingStore } from './login.js'
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
 
-  const { token } = req.query;
+  const { token } = req.body
 
-  const data = pendingStore.get(token);
+  const data = pendingStore.get(token)
 
   if (!data) {
-    return res.status(404).json({
-      success: false,
-      status: "not_found"
-    });
+    return res.json({
+      approved: false,
+      denied: true
+    })
   }
 
-  return res.status(200).json({
-    success: true,
-    status: data.status
-  });
+  return res.json({
+    approved: data.status === 'approved',
+    denied: data.status === 'denied'
+  })
 }
