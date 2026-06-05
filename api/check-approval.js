@@ -1,10 +1,17 @@
-import { pendingStore } from './login.js'
+import { pendingStore } from "./login.js"
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
+
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      approved: false
+    })
+  }
 
   const { token } = req.body
 
-  const data = pendingStore.get(token)
+  const data =
+    pendingStore.get(token)
 
   if (!data) {
     return res.json({
@@ -14,7 +21,10 @@ export default function handler(req, res) {
   }
 
   return res.json({
-    approved: data.status === 'approved',
-    denied: data.status === 'denied'
+    approved:
+      data.status === "approved",
+
+    denied:
+      data.status === "rejected"
   })
 }
