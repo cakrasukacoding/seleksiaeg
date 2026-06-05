@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEG Clan — Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+
+    [data-theme="dark"] {
+      --bg: #080808; --bg2: #0f0f0f;
+      --surface: rgba(255,255,255,0.04); --surface2: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.12); --border-h: rgba(255,255,255,0.35);
+      --text: #f0f0f0; --text-sub: rgba(240,240,240,0.5); --text-dim: rgba(240,240,240,0.25);
+      --glow: rgba(255,255,255,0.08); --glow-h: rgba(255,255,255,0.18);
+      --nav-bg: rgba(8,8,8,0.75); --popup-bg: #111;
+    }
+    [data-theme="light"] {
+      --bg: #f5f5f5; --bg2: #ebebeb;
+      --surface: rgba(0,0,0,0.04); --surface2: rgba(0,0,0,0.08);
+      --border: rgba(0,0,0,0.12); --border-h: rgba(0,0,0,0.4);
+      --text: #0a0a0a; --text-sub: rgba(10,10,10,0.5); --text-dim: rgba(10,10,10,0.3);
+      --glow: rgba(0,0,0,0.05); --glow-h: rgba(0,0,0,0.12);
+      --nav-bg: rgba(245,245,245,0.75); --popup-bg: #fff;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+    }
+
+    #bg-canvas {
+      position: fixed; top:0; left:0;
+      width:100%; height:100%;
+      z-index:0; pointer-events:none;
+    }
+
+    /* ── NAVBAR ── */
+    #navbar {
+      position: fixed; top:0; left:0; right:0; z-index:1000;
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 0 clamp(1.2rem,4vw,3rem); height:64px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Sora', sans-serif; font-weight:800;
+      font-size:1.1rem; letter-spacing:0.12em; color:var(--text); text-decoration:none;
+    }
+    .nav-logo span { opacity:0.45; }
+    .nav-right { display:flex; align-items:center; gap:0.75rem; }
+
+    .nav-badge {
+      font-size:0.65rem; font-weight:600; letter-spacing:0.15em;
+      text-transform:uppercase; color:var(--text-dim);
+      border:1px solid var(--border); padding:0.25rem 0.7rem;
+      border-radius:2px;
+    }
+
+    .icon-btn {
+      width:36px; height:36px; border-radius:50%;
+      border:1px solid var(--border); background:rgba(255,255,255,0.07);
+      color:var(--text); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.85rem;
+      transition: background 0.25s, border-color 0.25s, transform 0.3s;
+    }
+    .icon-btn:hover { background:rgba(255,255,255,0.15); border-color:var(--border-h); transform:rotate(15deg); }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      position:relative; z-index:1;
+      padding: 96px clamp(1.2rem,4vw,3rem) 80px;
+      max-width: 1200px; margin:0 auto;
+    }
+
+    .page-header {
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .page-label {
+      font-size:0.68rem; font-weight:600; letter-spacing:0.2em;
+      text-transform:uppercase; color:var(--text-dim); margin-bottom:0.5rem;
+    }
+    .page-title {
+      font-family:'Sora',sans-serif; font-size:clamp(1.8rem,4vw,2.4rem);
+      font-weight:800; color:var(--text); line-height:1.1; margin-bottom:0.5rem;
+    }
+    .page-sub { font-size:0.88rem; color:var(--text-sub); }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:2.5rem;
+      animation: fadeUp 0.7s 0.1s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .stat-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:6px; padding:1rem 1.5rem;
+      display:flex; flex-direction:column; gap:0.2rem;
+      min-width:120px;
+    }
+    .stat-num {
+      font-family:'Sora',sans-serif; font-size:1.8rem;
+      font-weight:800; color:var(--text); line-height:1;
+    }
+    .stat-label {
+      font-size:0.68rem; letter-spacing:0.12em;
+      text-transform:uppercase; color:var(--text-dim);
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      display:flex; gap:0.75rem; flex-wrap:wrap;
+      align-items:center; margin-bottom:1.5rem;
+      animation: fadeUp 0.7s 0.15s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .search-wrap {
+      position:relative; flex:1; min-width:200px;
+    }
+    .search-wrap i {
+      position:absolute; left:0.85rem; top:50%; transform:translateY(-50%);
+      font-size:0.75rem; color:var(--text-dim); pointer-events:none;
+    }
+    .search-input {
+      width:100%; background:var(--surface); border:1px solid var(--border);
+      border-radius:4px; padding:0.7rem 1rem 0.7rem 2.3rem;
+      font-family:'Space Grotesk',sans-serif; font-size:0.85rem; color:var(--text);
+      outline:none; transition:border-color 0.25s, box-shadow 0.25s;
+    }
+    .search-input::placeholder { color:var(--text-dim); }
+    .search-input:focus { border-color:var(--border-h); box-shadow:0 0 0 3px var(--glow); }
+
+    .btn-sm {
+      font-family:'Space Grotesk',sans-serif; font-size:0.72rem; font-weight:600;
+      letter-spacing:0.1em; text-transform:uppercase;
+      border:1px solid var(--border); background:var(--surface);
+      color:var(--text-sub); padding:0.65rem 1.1rem;
+      border-radius:4px; cursor:pointer;
+      display:flex; align-items:center; gap:0.4rem;
+      transition:border-color 0.2s, color 0.2s, background 0.2s;
+      white-space:nowrap;
+    }
+    .btn-sm:hover { border-color:var(--border-h); color:var(--text); background:var(--surface2); }
+    .btn-sm.active { border-color:var(--text); color:var(--bg); background:var(--text); }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; overflow:hidden;
+      animation: fadeUp 0.7s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .table-scroll { overflow-x:auto; }
+
+    table { width:100%; border-collapse:collapse; min-width:800px; }
+
+    thead tr {
+      background:var(--surface2); border-bottom:1px solid var(--border);
+    }
+    th {
+      padding:0.85rem 1rem; text-align:left;
+      font-size:0.68rem; font-weight:600; letter-spacing:0.15em;
+      text-transform:uppercase; color:var(--text-dim);
+      white-space:nowrap;
+    }
+    td {
+      padding:0.9rem 1rem; font-size:0.85rem; color:var(--text-sub);
+      border-bottom:1px solid var(--border); vertical-align:middle;
+    }
+    tr:last-child td { border-bottom:none; }
+    tbody tr { transition:background 0.2s; }
+    tbody tr:hover { background:var(--surface2); }
+
+    .td-name { color:var(--text); font-weight:600; }
+    .td-time { font-size:0.75rem; color:var(--text-dim); white-space:nowrap; }
+
+    /* Skill badges */
+    .skill-badges { display:flex; gap:0.3rem; flex-wrap:wrap; }
+    .badge {
+      font-size:0.6rem; font-weight:700; letter-spacing:0.1em;
+      text-transform:uppercase; padding:0.2rem 0.5rem;
+      border-radius:2px; border:1px solid var(--border);
+      color:var(--text-dim);
+    }
+    .badge.yes { border-color:var(--border-h); color:var(--text); background:var(--surface2); }
+
+    /* Video cell */
+    .video-thumb {
+      width:56px; height:36px; border-radius:3px;
+      background:var(--surface2); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:border-color 0.2s;
+      font-size:0.85rem; color:var(--text-dim);
+    }
+    .video-thumb:hover { border-color:var(--border-h); color:var(--text); }
+    .video-thumb.no-video { cursor:default; }
+
+    /* Loading / empty */
+    .table-loading {
+      padding:3rem 2rem; text-align:center; color:var(--text-dim);
+      font-size:0.85rem; letter-spacing:0.05em;
+    }
+    .loading-spinner {
+      width:20px; height:20px;
+      border:1.5px solid var(--border-h); border-top-color:transparent;
+      border-radius:50%; animation:spin 0.7s linear infinite;
+      margin:0 auto 0.75rem;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── VIDEO MODAL ── */
+    #video-modal {
+      display:none; position:fixed; inset:0; z-index:9000;
+      background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);
+      align-items:center; justify-content:center;
+      padding:2rem;
+    }
+    #video-modal.open { display:flex; }
+    .modal-inner {
+      position:relative; max-width:800px; width:100%;
+    }
+    .modal-close {
+      position:absolute; top:-2.5rem; right:0;
+      background:none; border:none; cursor:pointer;
+      color:var(--text-sub); font-size:0.85rem;
+      display:flex; align-items:center; gap:0.4rem;
+      letter-spacing:0.1em; text-transform:uppercase;
+    }
+    .modal-close:hover { color:var(--text); }
+    #modal-video {
+      width:100%; border-radius:6px;
+      border:1px solid var(--border);
+      background:#000;
+    }
+    .modal-meta {
+      margin-top:0.75rem; font-size:0.8rem;
+      color:var(--text-sub); letter-spacing:0.05em;
+    }
+
+    /* ── POPUP ── */
+    #popup {
+      position:fixed; bottom:1.5rem; left:50%;
+      transform:translateX(-50%) translateY(20px);
+      z-index:9999; opacity:0; pointer-events:none;
+      transition:opacity 0.4s, transform 0.4s; max-width:90vw;
+    }
+    #popup.show { opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+    .popup-inner {
+      background:var(--popup-bg); border:1px solid var(--border-h);
+      border-radius:6px; padding:1rem 1.5rem;
+      display:flex; align-items:center; gap:0.75rem;
+      font-size:0.85rem; color:var(--text); font-weight:500;
+      backdrop-filter:blur(16px); box-shadow:0 8px 32px rgba(0,0,0,0.35);
+      white-space:nowrap;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:none; }
+    }
+
+    @media (max-width:600px) {
+      .stats-bar { gap:0.75rem; }
+      .stat-card { min-width:90px; padding:0.75rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a class="nav-logo" href="index.html">AEG<span> /ADMIN</span></a>
+    <div class="nav-right">
+      <span class="nav-badge">Admin Panel</span>
+      <button class="icon-btn" id="theme-toggle" title="Toggle theme">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+      </button>
+      <button class="icon-btn" onclick="logout()" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- HEADER -->
+    <div class="page-header">
+      <p class="page-label">AEG Clan · Admin Dashboard</p>
+      <h1 class="page-title">Registrations</h1>
+      <p class="page-sub">Data pendaftaran masuk dari form seleksi.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-card">
+        <span class="stat-num" id="stat-total">—</span>
+        <span class="stat-label">Total Registrants</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="stat-video">—</span>
+        <span class="stat-label">With Video</span>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input class="search-input" id="search" type="text" placeholder="Cari nama, daerah..." oninput="filterTable()" />
+      </div>
+      <button class="btn-sm" onclick="loadData()">
+        <i class="fa-solid fa-rotate"></i> Refresh
+      </button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama</th>
+              <th>Daerah</th>
+              <th>Umur</th>
+              <th>Skills</th>
+              <th>Video Edit</th>
+              <th>Device</th>
+              <th>Waktu</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr>
+              <td colspan="8">
+                <div class="table-loading">
+                  <div class="loading-spinner"></div>
+                  Memuat data...
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- VIDEO MODAL -->
+  <div id="video-modal">
+    <div class="modal-inner">
+      <button class="modal-close" onclick="closeModal()">
+        <i class="fa-solid fa-xmark"></i> Close
+      </button>
+      <video id="modal-video" controls></video>
+      <div class="modal-meta" id="modal-meta"></div>
+    </div>
+  </div>
+
+  <!-- POPUP -->
+  <div id="popup">
+    <div class="popup-inner" id="popup-inner">
+      <i id="popup-icon" class="fa-solid fa-check-circle"></i>
+      <span id="popup-msg">Success</span>
+    </div>
+  </div>
+
+  <script>
+    /* ── AUTH GUARD ── */
+    const token = sessionStorage.getItem('aeg_admin_token')
+    if (!token) window.location.href = 'login.html'
+
+    function logout() {
+      sessionStorage.removeItem('aeg_admin_token')
+      window.location.href = 'login.html'
+    }
+
+    /* ── THEME ── */
+    const html = document.documentElement
+    let dark = true
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      dark = !dark
+      html.setAttribute('data-theme', dark ? 'dark' : 'light')
+    })
+
+    /* ── CANVAS PARTICLES ── */
+    const canvas = document.getElementById('bg-canvas')
+    const ctx = canvas.getContext('2d')
+    let W, H, pts = []
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight }
+    resize(); window.addEventListener('resize', resize)
+    function initPts() {
+      pts = []
+      const n = Math.floor((W * H) / 22000)
+      for (let i = 0; i < n; i++) pts.push({
+        x: Math.random()*W, y: Math.random()*H,
+        vx:(Math.random()-0.5)*0.25, vy:(Math.random()-0.5)*0.25, r:Math.random()*1.1+0.4
+      })
+    }
+    initPts()
+    function draw() {
+      ctx.clearRect(0,0,W,H)
+      const isDark = html.getAttribute('data-theme')==='dark'
+      const c = isDark ? 'rgba(255,255,255,' : 'rgba(0,0,0,'
+      pts.forEach(p => {
+        p.x+=p.vx; p.y+=p.vy
+        if(p.x<0)p.x=W; if(p.x>W)p.x=0
+        if(p.y<0)p.y=H; if(p.y>H)p.y=0
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2)
+        ctx.fillStyle=c+'0.3)'; ctx.fill()
+      })
+      pts.forEach((a,i)=>{ for(let j=i+1;j<pts.length;j++){
+        const b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y)
+        if(d<90){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y)
+          ctx.strokeStyle=c+(0.05*(1-d/90))+')';ctx.lineWidth=0.5;ctx.stroke()}
+      }})
+      requestAnimationFrame(draw)
+    }
+    draw()
+
+    /* ── DATA ── */
+    let allData = []
+
+    const SKILL_LABELS = {
+      gfx:'GFX', l2d:'L2D', jj:'JJ',
+      jjsoft:'JJ Soft', jjbrutal:'JJ Brutal', threed:'3D'
+    }
+
+    async function loadData() {
+      const tbody = document.getElementById('table-body')
+      tbody.innerHTML = `<tr><td colspan="8"><div class="table-loading"><div class="loading-spinner"></div>Memuat data...</div></td></tr>`
+
+      try {
+        const res = await fetch('/api/registrations', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+        if (res.status === 401) { logout(); return }
+        const data = await res.json()
+
+        if (!data.success) throw new Error(data.error)
+        allData = data.registrations || []
+        renderTable(allData)
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="table-loading" style="color:#ff5f5f;">Gagal memuat data: ${e.message}</div></td></tr>`
+      }
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById('table-body')
+
+      document.getElementById('stat-total').textContent = rows.length
+      document.getElementById('stat-video').textContent = rows.filter(r => r.videoUrl).length
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="table-loading">Belum ada data registrasi.</div></td></tr>`
+        return
+      }
+
+      tbody.innerHTML = rows.map((r, i) => {
+        const skills = Object.entries(r.skillState || {})
+          .map(([k, v]) => `<span class="badge ${v ? 'yes' : ''}">${SKILL_LABELS[k] || k}</span>`)
+          .join('')
+
+        const videoCell = r.videoUrl
+          ? `<div class="video-thumb" onclick="openVideo('${r.videoUrl}','${r.nama}')"><i class="fa-solid fa-play"></i></div>`
+          : `<div class="video-thumb no-video"><i class="fa-solid fa-minus"></i></div>`
+
+        return `
+          <tr>
+            <td style="color:var(--text-dim);font-size:0.75rem;">${i + 1}</td>
+            <td class="td-name">${esc(r.nama)}</td>
+            <td>${esc(r.daerah)}</td>
+            <td>${esc(r.umur)}</td>
+            <td><div class="skill-badges">${skills}</div></td>
+            <td>${videoCell}</td>
+            <td style="font-size:0.75rem;">${esc(r.device || '—')} / ${esc(r.browser || '—')}</td>
+            <td class="td-time">${esc(r.time || '—')}</td>
+          </tr>`
+      }).join('')
+    }
+
+    function filterTable() {
+      const q = document.getElementById('search').value.toLowerCase()
+      const filtered = allData.filter(r =>
+        (r.nama||'').toLowerCase().includes(q) ||
+        (r.daerah||'').toLowerCase().includes(q)
+      )
+      renderTable(filtered)
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    }
+
+    /* ── VIDEO MODAL ── */
+    function openVideo(url, nama) {
+      const modal = document.getElementById('video-modal')
+      document.getElementById('modal-video').src = url
+      document.getElementById('modal-meta').textContent = 'Video dari: ' + nama
+      modal.classList.add('open')
+    }
+    function closeModal() {
+      const modal = document.getElementById('video-modal')
+      modal.classList.remove('open')
+      document.getElementById('modal-video').pause()
+      document.getElementById('modal-video').src = ''
+    }
+    document.getElementById('video-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('video-modal')) closeModal()
+    })
+
+    /* ── POPUP ── */
+    function showPopup(msg, ok = true) {
+      const popup = document.getElementById('popup')
+      document.getElementById('popup-icon').className = ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'
+      document.getElementById('popup-msg').textContent = msg
+      popup.classList.add('show')
+      setTimeout(() => popup.classList.remove('show'), 4000)
+    }
+
+    /* ── INIT ── */
+    loadData()
+  </script>
+</body>
+</html>
