@@ -19,7 +19,9 @@
       --border: rgba(255,255,255,0.12); --border-h: rgba(255,255,255,0.35);
       --text: #f0f0f0; --text-sub: rgba(240,240,240,0.5); --text-dim: rgba(240,240,240,0.25);
       --glow: rgba(255,255,255,0.08); --glow-h: rgba(255,255,255,0.18);
-      --input-bg: rgba(255,255,255,0.04); --popup-bg: #111;
+      --input-bg: rgba(255,255,255,0.04);
+      --success: #4ade80;
+      --error: #f87171;
     }
     [data-theme="light"] {
       --bg: #f5f5f5; --bg2: #ebebeb;
@@ -27,7 +29,9 @@
       --border: rgba(0,0,0,0.12); --border-h: rgba(0,0,0,0.4);
       --text: #0a0a0a; --text-sub: rgba(10,10,10,0.5); --text-dim: rgba(10,10,10,0.3);
       --glow: rgba(0,0,0,0.05); --glow-h: rgba(0,0,0,0.12);
-      --input-bg: rgba(0,0,0,0.04); --popup-bg: #fff;
+      --input-bg: rgba(0,0,0,0.04);
+      --success: #22c55e;
+      --error: #ef4444;
     }
 
     html { scroll-behavior: smooth; }
@@ -49,7 +53,6 @@
       z-index: 0; pointer-events: none;
     }
 
-    /* ── LOGIN CARD ── */
     .login-wrap {
       position: relative;
       z-index: 1;
@@ -64,9 +67,9 @@
       border-radius: 8px;
       padding: 2.5rem 2rem;
       position: relative;
+      backdrop-filter: blur(2px);
     }
 
-    /* Corner decorations */
     .corner-deco {
       position: absolute; width: 14px; height: 14px;
       border-color: var(--border-h); border-style: solid; pointer-events: none;
@@ -135,7 +138,6 @@
       box-shadow: 0 0 0 3px var(--glow);
     }
 
-    /* Toggle password visibility */
     .toggle-pw {
       position: absolute;
       right: 0.9rem; top: 50%; transform: translateY(-50%);
@@ -145,18 +147,17 @@
     }
     .toggle-pw:hover { color: var(--text); }
 
-    /* Status message */
     .status-msg {
       font-size: 0.78rem;
-      color: var(--text-dim);
       text-align: center;
-      min-height: 1.2em;
+      min-height: 2.5em;
       margin-bottom: 0.75rem;
       transition: color 0.3s;
+      padding: 0.25rem;
     }
-    .status-msg.error { color: #ff5f5f; }
+    .status-msg.error { color: var(--error); }
     .status-msg.pending { color: var(--text-sub); }
-    .status-msg.success { color: #5fff8a; }
+    .status-msg.success { color: var(--success); }
 
     .btn-submit {
       font-family: 'Space Grotesk', sans-serif;
@@ -191,40 +192,6 @@
     }
     .back-link:hover { color: var(--text); }
 
-    /* Pending approval screen */
-    #pending-screen {
-      display: none;
-      text-align: center;
-      padding: 1rem 0;
-    }
-    .pending-icon {
-      font-size: 2.5rem;
-      color: var(--text-sub);
-      margin-bottom: 1rem;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100% { opacity:0.6 } 50% { opacity:1 } }
-    .pending-title {
-      font-family: 'Sora', sans-serif;
-      font-size: 1rem; font-weight: 700;
-      color: var(--text); margin-bottom: 0.5rem;
-    }
-    .pending-sub {
-      font-size: 0.8rem; color: var(--text-sub);
-      line-height: 1.6; max-width: 280px; margin: 0 auto 1.5rem;
-    }
-    .btn-outline {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.75rem; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--text); background: transparent;
-      border: 1px solid var(--border); padding: 0.7rem 1.5rem;
-      cursor: pointer; border-radius: 3px;
-      transition: border-color 0.25s, background 0.25s;
-    }
-    .btn-outline:hover { border-color: var(--border-h); background: var(--surface2); }
-
-    /* Fade in */
     .login-card {
       animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
     }
@@ -244,7 +211,6 @@
       <div class="corner-deco bl"></div>
       <div class="corner-deco br"></div>
 
-      <!-- LOGIN FORM -->
       <div id="login-screen">
         <div class="login-logo">AEG<span> /ADMIN</span></div>
         <div class="login-subtitle">Restricted Access — Verify Identity</div>
@@ -280,184 +246,155 @@
           Back to Home
         </a>
       </div>
-
-      <!-- PENDING APPROVAL SCREEN -->
-      <div id="pending-screen">
-        <div class="pending-icon">
-          <i class="fa-solid fa-shield-halved"></i>
-        </div>
-        <div class="pending-title">Waiting for Approval</div>
-        <div class="pending-sub">
-          A verification request has been sent to the AEG admin via Telegram.
-          Please wait for approval.
-        </div>
-        <button class="btn-outline" onclick="checkApproval()">
-          <i class="fa-solid fa-rotate" style="margin-right:0.4rem;"></i>
-          Check Status
-        </button>
-        <a href="login.html" class="back-link" style="margin-top:1rem;">Cancel & Go Back</a>
-      </div>
     </div>
   </div>
 
   <script>
-    /* ── CANVAS PARTICLES (same as main site) ── */
-    const canvas = document.getElementById('bg-canvas')
-    const ctx = canvas.getContext('2d')
-    let W, H, pts = []
+    // Canvas particles background
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, pts = [];
 
     function resize() {
-      W = canvas.width = window.innerWidth
-      H = canvas.height = window.innerHeight
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
     }
-    resize()
-    window.addEventListener('resize', resize)
+    resize();
+    window.addEventListener('resize', resize);
 
     function initPts() {
-      pts = []
-      const n = Math.floor((W * H) / 18000)
+      pts = [];
+      const n = Math.floor((W * H) / 18000);
       for (let i = 0; i < n; i++) {
         pts.push({
           x: Math.random() * W, y: Math.random() * H,
           vx: (Math.random() - 0.5) * 0.3,
           vy: (Math.random() - 0.5) * 0.3,
           r: Math.random() * 1.2 + 0.4
-        })
+        });
       }
     }
-    initPts()
+    initPts();
 
     function draw() {
-      ctx.clearRect(0, 0, W, H)
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
-      const clr = isDark ? 'rgba(255,255,255,' : 'rgba(0,0,0,'
+      ctx.clearRect(0, 0, W, H);
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const clr = isDark ? 'rgba(255,255,255,' : 'rgba(0,0,0,';
       pts.forEach(p => {
-        p.x += p.vx; p.y += p.vy
-        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0
-        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = clr + '0.35)'
-        ctx.fill()
-      })
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = clr + '0.35)';
+        ctx.fill();
+      });
       pts.forEach((a, i) => {
         for (let j = i + 1; j < pts.length; j++) {
-          const b = pts[j]
-          const d = Math.hypot(a.x - b.x, a.y - b.y)
+          const b = pts[j];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
           if (d < 100) {
-            ctx.beginPath()
-            ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y)
-            ctx.strokeStyle = clr + (0.06 * (1 - d / 100)) + ')'
-            ctx.lineWidth = 0.5
-            ctx.stroke()
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = clr + (0.06 * (1 - d / 100)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
           }
         }
-      })
-      requestAnimationFrame(draw)
+      });
+      requestAnimationFrame(draw);
     }
-    draw()
+    draw();
 
-    /* ── PASSWORD TOGGLE ── */
+    // ========== LOGIN FUNCTIONS ==========
+    
     function togglePw() {
-      const inp = document.getElementById('password')
-      const icon = document.getElementById('eye-icon')
-      if (inp.type === 'password') {
-        inp.type = 'text'
-        icon.className = 'fa-solid fa-eye-slash'
+      const password = document.getElementById("password");
+      const icon = document.getElementById("eye-icon");
+
+      if (password.type === "password") {
+        password.type = "text";
+        icon.className = "fa-solid fa-eye-slash";
       } else {
-        inp.type = 'password'
-        icon.className = 'fa-solid fa-eye'
+        password.type = "password";
+        icon.className = "fa-solid fa-eye";
       }
     }
 
-    /* ── LOGIN REQUEST ── */
-    let sessionToken = null
+    function requestLogin() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const status = document.getElementById("status-msg");
+      const btn = document.getElementById("login-btn");
 
-    async function requestLogin() {
-      const username = document.getElementById('username').value.trim()
-      const password = document.getElementById('password').value.trim()
-      const status = document.getElementById('status-msg')
-      const btn = document.getElementById('login-btn')
-
+      // Clear previous status
+      status.className = "status-msg";
+      
       if (!username || !password) {
-        status.className = 'status-msg error'
-        status.textContent = 'Username dan password wajib diisi.'
-        return
+        status.className = "status-msg error";
+        status.textContent = "✗ Username dan password wajib diisi.";
+        return;
       }
 
-      btn.disabled = true
-      btn.innerHTML = '<span class="spinner"></span> Sending...'
-      status.className = 'status-msg pending'
-      status.textContent = 'Mengirim permintaan...'
+      // Disable button and show loading
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Verifying...';
+      status.className = "status-msg pending";
+      status.textContent = "⏳ Memverifikasi kredensial...";
 
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        })
-        const data = await res.json()
+      // CREDENTIALS - GANTI SESUAI KEINGINAN
+      const ADMIN_USERNAME = "cakra";
+      const ADMIN_PASSWORD = "aeg123";
 
-        if (data.success) {
-          sessionToken = data.token
-          // Switch to pending screen
-          document.getElementById('login-screen').style.display = 'none'
-          document.getElementById('pending-screen').style.display = 'block'
+      // Simulasi proses verifikasi
+      setTimeout(() => {
+        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+          // Login success
+          sessionStorage.setItem("aeg_admin_login", "true");
+          sessionStorage.setItem("aeg_admin_username", username);
+          
+          status.className = "status-msg success";
+          status.textContent = "✓ Login berhasil! Mengalihkan ke dashboard...";
+          
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> Success';
+          
+          // Redirect to admin panel
+          setTimeout(() => {
+            window.location.href = "admin.html";
+          }, 1000);
+          
         } else {
-          status.className = 'status-msg error'
-          status.textContent = data.error || 'Gagal mengirim permintaan.'
+          // Login failed
+          status.className = "status-msg error";
+          status.textContent = "✗ Username atau password salah. Akses ditolak.";
+          
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Request Access';
+          
+          // Clear password field for security
+          document.getElementById("password").value = "";
+          document.getElementById("password").focus();
         }
-      } catch (e) {
-        status.className = 'status-msg error'
-        status.textContent = 'Network error. Coba lagi.'
-      } finally {
-        btn.disabled = false
-        btn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Request Access'
-      }
+      }, 1200);
     }
 
-    /* ── CHECK APPROVAL ── */
-    async function checkApproval() {
-      if (!sessionToken) return
-      const btn = document.querySelector('#pending-screen .btn-outline')
-      btn.disabled = true
-      btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin" style="margin-right:0.4rem;"></i> Checking...'
-
-      try {
-        const res = await fetch('/api/check-approval', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: sessionToken })
-        })
-        const data = await res.json()
-
-        if (data.approved) {
-          // Save session and redirect
-          sessionStorage.setItem('aeg_admin_token', sessionToken)
-          window.location.href = 'admin.html'
-        } else if (data.denied) {
-          document.getElementById('pending-screen').style.display = 'none'
-          document.getElementById('login-screen').style.display = 'block'
-          const status = document.getElementById('status-msg')
-          status.className = 'status-msg error'
-          status.textContent = 'Akses ditolak oleh admin.'
-          sessionToken = null
-        } else {
-          // Still pending
-          btn.disabled = false
-          btn.innerHTML = '<i class="fa-solid fa-rotate" style="margin-right:0.4rem;"></i> Check Status'
-          alert('Masih menunggu persetujuan admin.')
-        }
-      } catch (e) {
-        btn.disabled = false
-        btn.innerHTML = '<i class="fa-solid fa-rotate" style="margin-right:0.4rem;"></i> Check Status'
+    // Enter key support
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        requestLogin();
       }
-    }
+    });
 
-    /* ── ENTER KEY ── */
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') requestLogin()
-    })
+    // Auto-focus on username field when page loads
+    window.addEventListener("load", function() {
+      document.getElementById("username").focus();
+      
+      // Check if already logged in
+      if (sessionStorage.getItem("aeg_admin_login") === "true") {
+        window.location.href = "admin.html";
+      }
+    });
   </script>
 </body>
 </html>
